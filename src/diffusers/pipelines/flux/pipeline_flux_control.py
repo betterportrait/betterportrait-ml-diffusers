@@ -854,7 +854,6 @@ class FluxControlPipeline(
                 # compute the previous noisy sample x_t -> x_t-1
                 latents_dtype = latents.dtype
                 latents = self.scheduler.step(noise_pred, t, latents, return_dict=False)[0]
-                print(self.scheduler._step_index)
 
                 if latents.dtype != latents_dtype:
                     if torch.backends.mps.is_available():
@@ -877,7 +876,7 @@ class FluxControlPipeline(
                 if XLA_AVAILABLE:
                     xm.mark_step()
 
-        if output_type == "latent":
+        if output_type == "latents":
             image = latents
         else:
             latents = self._unpack_latents(latents, height, width, self.vae_scale_factor)
