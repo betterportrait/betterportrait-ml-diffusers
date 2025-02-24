@@ -702,8 +702,8 @@ class FluxControlPipeline(
                 will be passed as `callback_kwargs` argument. You will only be able to include variables listed in the
                 `._callback_tensor_inputs` attribute of your pipeline class.
             max_sequence_length (`int` defaults to 512): Maximum sequence length to use with the `prompt`.
-            start_inference_step ('int', *optional*): Skip first steps and start at (inclusive) this inference step instead (partial diffusion)
-            stop_inference_Step ('int', *optional*): Skip last steps and end before (exclusive) this inference step instead (partial diffusion)
+            start_inference_step ('int', *optional*): Skip first steps and start at this inference step instead (partial diffusion)
+            stop_inference_Step ('int', *optional*): Skip last steps and end at this inference step instead (partial diffusion)
 
         Examples:
 
@@ -826,11 +826,11 @@ class FluxControlPipeline(
             guidance = None
 
         # handle partial denoising case
-        timesteps = timesteps[start_inference_step:stop_inference_step]
+        new_timesteps = timesteps[start_inference_step:stop_inference_step+1]
 
         # 6. Denoising loop
         with self.progress_bar(total=num_inference_steps) as progress_bar:
-            for i, t in enumerate(timesteps):
+            for i, t in enumerate(new_timesteps):
                 if self.interrupt:
                     continue
 
