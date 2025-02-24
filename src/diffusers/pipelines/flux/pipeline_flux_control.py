@@ -826,10 +826,12 @@ class FluxControlPipeline(
             guidance = None
 
         # handle partial denoising case
-        new_timesteps = timesteps[start_inference_step:stop_inference_step+1]
+        if stop_inference_step is not -1: 
+            stop_inference_step = stop_inference_step + 1
+        new_timesteps = timesteps[start_inference_step:stop_inference_step]
 
         # 6. Denoising loop
-        with self.progress_bar(total=num_inference_steps) as progress_bar:
+        with self.progress_bar(total=len(new_timesteps)) as progress_bar:
             for i, t in enumerate(new_timesteps):
                 if self.interrupt:
                     continue
