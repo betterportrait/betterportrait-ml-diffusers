@@ -826,8 +826,6 @@ class FluxControlPipeline(
             guidance = None
 
         # handle partial denoising case
-        if stop_inference_step is not -1: 
-            stop_inference_step = stop_inference_step + 1
         new_timesteps = timesteps[start_inference_step:stop_inference_step]
         print(timesteps)
         print(new_timesteps)
