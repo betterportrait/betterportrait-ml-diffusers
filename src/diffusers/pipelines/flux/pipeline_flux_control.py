@@ -630,8 +630,8 @@ class FluxControlPipeline(
         callback_on_step_end: Optional[Callable[[int, int, Dict], None]] = None,
         callback_on_step_end_tensor_inputs: List[str] = ["latents"],
         max_sequence_length: int = 512,
-        start_inference_step: int = 0,
-        stop_inference_step: int = -1,
+        start_inference_step: int = None,
+        stop_inference_step: int = None,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -829,6 +829,8 @@ class FluxControlPipeline(
         if stop_inference_step is not -1: 
             stop_inference_step = stop_inference_step + 1
         new_timesteps = timesteps[start_inference_step:stop_inference_step]
+        print(timesteps)
+        print(new_timesteps)
 
         # 6. Denoising loop
         with self.progress_bar(total=len(new_timesteps)) as progress_bar:
