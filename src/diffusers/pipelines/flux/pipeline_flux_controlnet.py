@@ -618,6 +618,8 @@ class FluxControlNetPipeline(DiffusionPipeline, FluxLoraLoaderMixin, FromSingleF
         callback_on_step_end: Optional[Callable[[int, int, Dict], None]] = None,
         callback_on_step_end_tensor_inputs: List[str] = ["latents"],
         max_sequence_length: int = 512,
+        start_inference_step: int = None,
+        stop_inference_step: int = None,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -698,6 +700,8 @@ class FluxControlNetPipeline(DiffusionPipeline, FluxLoraLoaderMixin, FromSingleF
                 will be passed as `callback_kwargs` argument. You will only be able to include variables listed in the
                 `._callback_tensor_inputs` attribute of your pipeline class.
             max_sequence_length (`int` defaults to 512): Maximum sequence length to use with the `prompt`.
+            start_inference_step ('int', *optional*): Skip first steps and start at this inference step instead (partial diffusion)
+            stop_inference_Step ('int', *optional*): Skip last steps and end at this inference step instead (partial diffusion)
 
         Examples:
 
@@ -899,9 +903,12 @@ class FluxControlNetPipeline(DiffusionPipeline, FluxLoraLoaderMixin, FromSingleF
             ]
             controlnet_keep.append(keeps[0] if isinstance(self.controlnet, FluxControlNetModel) else keeps)
 
+        # handle partial denoising case
+        new_timesteps = timesteps[start_inference_step:stop_inference_step]
+
         # 7. Denoising loop
-        with self.progress_bar(total=num_inference_steps) as progress_bar:
-            for i, t in enumerate(timesteps):
+        with self.progress_bar(total=len(new_timesteps)) as progress_bar:
+            for i, t in enumerate(new_timesteps):
                 if self.interrupt:
                     continue
 
