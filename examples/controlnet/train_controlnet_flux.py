@@ -33,7 +33,7 @@ import transformers
 from accelerate import Accelerator
 from accelerate.logging import get_logger
 from accelerate.utils import DistributedType, ProjectConfiguration, set_seed
-from datasets import load_dataset
+from datasets import load_dataset, load_from_disk
 from huggingface_hub import create_repo, upload_folder
 from packaging import version
 from PIL import Image
@@ -496,6 +496,11 @@ def parse_args(input_args=None):
         ),
     )
     parser.add_argument(
+        "--dataset_local",
+        action="store_true",
+        help="The dataset is saved locally using save_to_disk.",
+    )
+    parser.add_argument(
         "--dataset_config_name",
         type=str,
         default=None,
@@ -686,11 +691,16 @@ def get_train_dataset(args, accelerator):
     dataset = None
     if args.dataset_name is not None:
         # Downloading and loading a dataset from the hub.
-        dataset = load_dataset(
-            args.dataset_name,
-            args.dataset_config_name,
-            cache_dir=args.cache_dir,
-        )
+        if args.dataset_local:
+            dataset = load_from_disk(
+                args.dataset_name,
+                args.dataset_config_name,
+                cache_dir=args.cache_dir,
+            )
+        else:
+            dataset = load_dataset(
+                args.dataset_name
+            )
     if args.jsonl_for_train is not None:
         # load from json
         dataset = load_dataset("json", data_files=args.jsonl_for_train, cache_dir=args.cache_dir)
