@@ -707,7 +707,6 @@ def get_train_dataset(args, accelerator):
         dataset = dataset.flatten_indices()
     # Preprocessing the datasets.
     # We need to tokenize inputs and targets.
-    column_names = dataset["train"].column_names
     if isinstance(dataset, dict) and "train" in dataset:
         dataset_train = dataset["train"]
     else:
