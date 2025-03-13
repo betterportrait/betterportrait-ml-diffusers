@@ -708,7 +708,12 @@ def get_train_dataset(args, accelerator):
     # Preprocessing the datasets.
     # We need to tokenize inputs and targets.
     column_names = dataset["train"].column_names
+    if isinstance(dataset, dict) and "train" in dataset:
+        dataset_train = dataset["train"]
+    else:
+        dataset_train = dataset  # Direct access if 'train' doesn't exist
 
+    column_names = dataset_train.column_names
     # 6. Get the column names for input/target.
     if args.image_column is None:
         image_column = column_names[0]
@@ -741,7 +746,7 @@ def get_train_dataset(args, accelerator):
             )
 
     with accelerator.main_process_first():
-        train_dataset = dataset["train"].shuffle(seed=args.seed)
+        train_dataset = dataset_train.shuffle(seed=args.seed)
         if args.max_train_samples is not None:
             train_dataset = train_dataset.select(range(args.max_train_samples))
     return train_dataset
