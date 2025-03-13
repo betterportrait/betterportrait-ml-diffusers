@@ -693,13 +693,13 @@ def get_train_dataset(args, accelerator):
         # Downloading and loading a dataset from the hub.
         if args.dataset_local:
             dataset = load_from_disk(
-                args.dataset_name,
-                args.dataset_config_name,
-                cache_dir=args.cache_dir,
+                args.dataset_name
             )
         else:
             dataset = load_dataset(
-                args.dataset_name
+                args.dataset_name,
+                args.dataset_config_name,
+                cache_dir=args.cache_dir,
             )
     if args.jsonl_for_train is not None:
         # load from json
