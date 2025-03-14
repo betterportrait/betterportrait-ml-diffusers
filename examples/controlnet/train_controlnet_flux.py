@@ -59,6 +59,7 @@ from diffusers.utils import check_min_version, is_wandb_available, make_image_gr
 from diffusers.utils.hub_utils import load_or_create_model_card, populate_model_card
 from diffusers.utils.import_utils import is_torch_npu_available, is_xformers_available
 from diffusers.utils.torch_utils import is_compiled_module
+from diffusers.utils.dataset_utils import SmartphoneDegradation
 
 
 if is_wandb_available():
@@ -646,6 +647,34 @@ def parse_args(input_args=None):
         action="store_true",
         help="Enable model cpu offload and save memory.",
     )
+    parser.add_argument(
+        "--use_smartphone_degradation",
+        action="store_true",
+        help="Enable smartphone degradation on condition images.",
+    )
+    parser.add_argument(
+        "--degradation_max_jpg_quality",
+        type=float,
+        default=40,
+        help="Smartphone degradation parameter.",
+    )
+    parser.add_argument(
+        "--degradation_max_downscale",
+        type=float,
+        default=8,
+        help="Smartphone degradation parameter.",
+    )
+    parser.add_argument(
+        "--degradation_max_noise",
+        type=float,
+        default=2,
+        help="Smartphone degradation parameter.",
+    )
+    parser.add_argument(
+        "--use_smartphone_blur",
+        action="store_true",
+        help="Smartphone degradation parameter.",
+    )
 
     if input_args is not None:
         args = parser.parse_args(input_args)
@@ -761,14 +790,25 @@ def prepare_train_dataset(dataset, accelerator):
         ]
     )
 
-    conditioning_image_transforms = transforms.Compose(
-        [
-            transforms.Resize(args.resolution, interpolation=transforms.InterpolationMode.BILINEAR),
-            transforms.CenterCrop(args.resolution),
-            transforms.ToTensor(),
-            transforms.Normalize([0.5], [0.5]),
-        ]
-    )
+    if args.use_smartphone_degradation:
+        conditioning_image_transforms = transforms.Compose(
+            [
+                SmartphoneDegradation(dyn_range=None, jpg_quality=args.degradation_max_jpg_quality, downscale_factor=args.degradation_max_downscale, noise_strength=args.degradation_max_noise, blur=args.use_smartphone_blur),
+                transforms.Resize(args.resolution, interpolation=transforms.InterpolationMode.BILINEAR),
+                transforms.CenterCrop(args.resolution),
+                transforms.ToTensor(),
+                transforms.Normalize([0.5], [0.5]),
+            ]
+        )
+    else:
+        conditioning_image_transforms = transforms.Compose(
+            [
+                transforms.Resize(args.resolution, interpolation=transforms.InterpolationMode.BILINEAR),
+                transforms.CenterCrop(args.resolution),
+                transforms.ToTensor(),
+                transforms.Normalize([0.5], [0.5]),
+            ]
+        )
 
     def preprocess_train(examples):
         images = [
