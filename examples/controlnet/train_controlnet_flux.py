@@ -654,19 +654,19 @@ def parse_args(input_args=None):
     )
     parser.add_argument(
         "--degradation_max_jpg_quality",
-        type=float,
+        type=int,
         default=40,
         help="Smartphone degradation parameter.",
     )
     parser.add_argument(
         "--degradation_max_downscale",
-        type=float,
+        type=int,
         default=8,
         help="Smartphone degradation parameter.",
     )
     parser.add_argument(
         "--degradation_max_noise",
-        type=float,
+        type=int,
         default=2,
         help="Smartphone degradation parameter.",
     )
