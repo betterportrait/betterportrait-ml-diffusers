@@ -54,7 +54,7 @@ class SmartphoneDegradation:
 
         # 3) JPEG Compression
         buf = BytesIO()
-        img.save(buf, format="JPEG", quality=self.jpg_quality + int(random.random() * (99 - self.jpg_quality)))
+        img.save(buf, format="JPEG", quality=int(self.jpg_quality + int(random.random() * (99 - self.jpg_quality))))
         buf.seek(0)
         img = Image.open(buf).convert("RGB")
 
