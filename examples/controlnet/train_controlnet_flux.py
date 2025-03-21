@@ -675,6 +675,16 @@ def parse_args(input_args=None):
         action="store_true",
         help="Smartphone degradation parameter.",
     )
+    parser.add_argument(
+        "--freeze_single_layers",
+        action="store_true",
+        help="Freeze single layers of the controlnet and only train double",
+    )
+    parser.add_argument(
+        "--freeze_double_layers",
+        action="store_true",
+        help="Freeze double layers of the controlnet and only train single",
+    )
 
     if input_args is not None:
         args = parser.parse_args(input_args)
@@ -971,6 +981,16 @@ def main(args):
     text_encoder_one.requires_grad_(False)
     text_encoder_two.requires_grad_(False)
     flux_controlnet.train()
+
+    if args.freeze_double_layers:
+        for name, param in flux_controlnet.named_parameters():
+            if "controlnet_blocks" in name:
+                param.requires_grad_(False)
+    
+    if args.freeze_single_layers:
+        for name, param in flux_controlnet.named_parameters():
+            if "controlnet_single_blocks" in name:
+                param.requires_grad_(False)
 
     # use some pipeline function
     flux_controlnet_pipeline = FluxControlNetPipeline(
