@@ -987,12 +987,14 @@ def main(args):
         for name, param in flux_controlnet.named_parameters():
             if "controlnet_blocks" in name:
                 param.requires_grad_(False)
+                logger.info(f"freeze {name}")
     
     if args.freeze_single_layers:
         logger.info("freeze single layers")
         for name, param in flux_controlnet.named_parameters():
             if "controlnet_single_blocks" in name:
                 param.requires_grad_(False)
+                logger.info(f"freeze {name}")
 
     # use some pipeline function
     flux_controlnet_pipeline = FluxControlNetPipeline(
