@@ -983,13 +983,13 @@ def main(args):
     flux_controlnet.train()
 
     if args.freeze_double_layers:
-        print("freeze double layers")
+        logger.info("freeze double layers")
         for name, param in flux_controlnet.named_parameters():
             if "controlnet_blocks" in name:
                 param.requires_grad_(False)
     
     if args.freeze_single_layers:
-        print("freeze single layers")
+        logger.info("freeze single layers")
         for name, param in flux_controlnet.named_parameters():
             if "controlnet_single_blocks" in name:
                 param.requires_grad_(False)
