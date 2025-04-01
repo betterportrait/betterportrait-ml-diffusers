@@ -59,7 +59,7 @@ from diffusers.utils import check_min_version, is_wandb_available, make_image_gr
 from diffusers.utils.hub_utils import load_or_create_model_card, populate_model_card
 from diffusers.utils.import_utils import is_torch_npu_available, is_xformers_available
 from diffusers.utils.torch_utils import is_compiled_module
-from diffusers.utils.dataset_utils import SmartphoneDegradation
+from diffusers.utils.dataset_utils import SmartphoneDegradation, CenterCropVariableSize
 
 
 if is_wandb_available():
@@ -309,6 +309,9 @@ def parse_args(input_args=None):
             "The resolution for input images, all the images in the train/validation dataset will be resized to this"
             " resolution"
         ),
+    )
+    parser.add_argument(
+        "--use_variable_aspectratio", action="store_true", help="Whether or not to use variable aspect ratio (only usable with batch size 1 for now)."
     )
     parser.add_argument(
         "--crops_coords_top_left_h",
@@ -789,12 +792,15 @@ def get_train_dataset(args, accelerator):
             train_dataset = train_dataset.select(range(args.max_train_samples))
     return train_dataset
 
-
 def prepare_train_dataset(dataset, accelerator):
+    if args.use_variable_aspectratio and args.train_batch_size == 1:
+        crop_transformer = CenterCropVariableSize(args.resolution)
+    else:
+        crop_transformer = transforms.CenterCrop(args.resolution)
     image_transforms = transforms.Compose(
         [
             transforms.Resize(args.resolution, interpolation=transforms.InterpolationMode.BILINEAR),
-            transforms.CenterCrop(args.resolution),
+            crop_transformer,
             transforms.ToTensor(),
             transforms.Normalize([0.5], [0.5]),
         ]
@@ -805,7 +811,7 @@ def prepare_train_dataset(dataset, accelerator):
             [
                 SmartphoneDegradation(dyn_range=None, jpg_quality=args.degradation_max_jpg_quality, downscale_factor=args.degradation_max_downscale, noise_strength=args.degradation_max_noise, blur=args.use_smartphone_blur),
                 transforms.Resize(args.resolution, interpolation=transforms.InterpolationMode.BILINEAR),
-                transforms.CenterCrop(args.resolution),
+                crop_transformer,
                 transforms.ToTensor(),
                 transforms.Normalize([0.5], [0.5]),
             ]
@@ -814,7 +820,7 @@ def prepare_train_dataset(dataset, accelerator):
         conditioning_image_transforms = transforms.Compose(
             [
                 transforms.Resize(args.resolution, interpolation=transforms.InterpolationMode.BILINEAR),
-                transforms.CenterCrop(args.resolution),
+                crop_transformer,
                 transforms.ToTensor(),
                 transforms.Normalize([0.5], [0.5]),
             ]

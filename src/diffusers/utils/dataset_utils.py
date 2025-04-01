@@ -5,6 +5,7 @@ from io import BytesIO
 from skimage.transform import resize
 from scipy import ndimage
 import random
+from torchvision import transforms 
 
 class SmartphoneDegradation:
     def __init__(self, dyn_range=None, jpg_quality=40, downscale_factor=2, noise_strength=2, blur=True):
@@ -77,3 +78,16 @@ class SmartphoneDegradation:
         arr = np.clip(arr * 255, 0, 255).astype(np.uint8)
 
         return Image.fromarray(arr)
+    
+    class CenterCropVariableSize:
+        def __init__(self, resolution):
+            self.aspect_ratios = [1., 3/4, 2/3, 3/5, 4/5, 9/16]
+            self.resolution = resolution
+
+        def __call__(self, img):
+            # Randomly select a crop size within the specified range
+            ratio = random.choice(self.aspect_ratios)
+            crop_size = [self.resolution, self.resolution]
+            crop_size[random.choice([0, 1])] *= ratio
+            crop_transform = transforms.CenterCrop(crop_size)
+            return crop_transform(img)
