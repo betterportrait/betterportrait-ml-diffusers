@@ -90,5 +90,5 @@ class CenterCropVariableSize:
         random.seed(seed)
         ratio = random.choice(self.aspect_ratios)
         crop_size = [self.resolution, self.resolution]
-        crop_size[random.choice([0, 1])] = int(math.ceil(crop_size[random.choice([0, 1])] * ratio / 8.0) * 8)
+        crop_size[random.choice([0, 1])] = int(math.ceil(crop_size[random.choice([0, 1])] * ratio / 16.0) * 16)
         return center_crop(img, crop_size)
