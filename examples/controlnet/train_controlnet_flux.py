@@ -1338,7 +1338,8 @@ def main(args):
                     control_latents.shape[2],
                     control_latents.shape[3],
                 )
-
+                print(f"pixel values: {pixel_values.shape}")
+                print(f"control values: {control_values.shape}")
                 latent_image_ids = FluxControlNetPipeline._prepare_latent_image_ids(
                     batch_size=pixel_latents_tmp.shape[0],
                     height=pixel_latents_tmp.shape[2] // 2,
