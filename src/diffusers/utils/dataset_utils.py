@@ -6,6 +6,7 @@ from skimage.transform import resize
 from scipy import ndimage
 import random
 from torchvision.transforms.functional import center_crop
+import math
 
 class SmartphoneDegradation:
     def __init__(self, dyn_range=None, jpg_quality=40, downscale_factor=2, noise_strength=2, blur=True):
@@ -89,5 +90,5 @@ class CenterCropVariableSize:
         random.seed(seed)
         ratio = random.choice(self.aspect_ratios)
         crop_size = [self.resolution, self.resolution]
-        crop_size[random.choice([0, 1])] = int((crop_size[random.choice([0, 1])] * ratio + 7) // 8 * 8)
+        crop_size[random.choice([0, 1])] = int(math.ceil(crop_size[random.choice([0, 1])] * ratio / 8.0) * 8)
         return center_crop(img, crop_size)
