@@ -793,10 +793,9 @@ def get_train_dataset(args, accelerator):
     return train_dataset
 
 def prepare_train_dataset(dataset, accelerator):
-    if args.use_variable_aspectratio and args.train_batch_size == 1:
-        crop_transformer = CenterCropVariableSize(args.resolution)
-    else:
-        crop_transformer = transforms.CenterCrop(args.resolution)
+
+    crop_transformer = transforms.CenterCrop(args.resolution)
+
     image_transforms = transforms.Compose(
         [
             transforms.Resize(args.resolution, interpolation=transforms.InterpolationMode.BILINEAR),
@@ -1311,6 +1310,8 @@ def main(args):
             sigma = sigma.unsqueeze(-1)
         return sigma
 
+    crop_transformer = CenterCropVariableSize(args.resolution)
+
     image_logs = None
     for epoch in range(first_epoch, args.num_train_epochs):
         for step, batch in enumerate(train_dataloader):
@@ -1318,6 +1319,8 @@ def main(args):
                 # Convert images to latent space
                 # vae encode
                 pixel_values = batch["pixel_values"].to(dtype=weight_dtype)
+                if args.use_variable_aspectratio:
+                    pixel_values = crop_transformer(pixel_values, step)
                 pixel_latents_tmp = vae.encode(pixel_values).latent_dist.sample()
                 pixel_latents_tmp = (pixel_latents_tmp - vae.config.shift_factor) * vae.config.scaling_factor
                 pixel_latents = FluxControlNetPipeline._pack_latents(
@@ -1329,6 +1332,8 @@ def main(args):
                 )
 
                 control_values = batch["conditioning_pixel_values"].to(dtype=weight_dtype)
+                if args.use_variable_aspectratio:
+                    control_values = crop_transformer(control_values, step)
                 control_latents = vae.encode(control_values).latent_dist.sample()
                 control_latents = (control_latents - vae.config.shift_factor) * vae.config.scaling_factor
                 control_image = FluxControlNetPipeline._pack_latents(
@@ -1338,8 +1343,7 @@ def main(args):
                     control_latents.shape[2],
                     control_latents.shape[3],
                 )
-                print(f"pixel values: {pixel_values.shape}")
-                print(f"control values: {control_values.shape}")
+                
                 latent_image_ids = FluxControlNetPipeline._prepare_latent_image_ids(
                     batch_size=pixel_latents_tmp.shape[0],
                     height=pixel_latents_tmp.shape[2] // 2,

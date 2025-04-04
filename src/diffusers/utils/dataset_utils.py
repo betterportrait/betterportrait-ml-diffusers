@@ -84,8 +84,9 @@ class CenterCropVariableSize:
         self.aspect_ratios = [1., 3/4, 2/3, 3/5, 4/5, 9/16]
         self.resolution = resolution
 
-    def __call__(self, img):
+    def __call__(self, img, seed=42):
         # Randomly select a crop size within the specified range
+        random.seed(seed)
         ratio = random.choice(self.aspect_ratios)
         crop_size = [self.resolution, self.resolution]
         crop_size[random.choice([0, 1])] *= ratio
