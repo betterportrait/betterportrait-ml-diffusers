@@ -1323,6 +1323,8 @@ def main(args):
                     pixel_values = crop_transformer(pixel_values, step)
                 pixel_latents_tmp = vae.encode(pixel_values).latent_dist.sample()
                 pixel_latents_tmp = (pixel_latents_tmp - vae.config.shift_factor) * vae.config.scaling_factor
+                print(pixel_values.shape)
+                print(pixel_latents_tmp.shape)
                 pixel_latents = FluxControlNetPipeline._pack_latents(
                     pixel_latents_tmp,
                     pixel_values.shape[0],
